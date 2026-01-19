@@ -24,7 +24,6 @@ Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
    ```DOS
    python -m venv venv
    venv\Scripts\activate
-
 3. **Installa le dipendenze:**
    ```Bash
    pip install "mcp[cli]" pandas
