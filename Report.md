@@ -1,5 +1,7 @@
 B06 - AI-Assisted MCP Server: Project Report
-Studente: [Tuo Nome] Progetto: MCP Server Exposing CSV Directory Data: 19/12/2025
+Studente: Michele Sagone 
+Progetto: MCP Server Exposing CSV Directory 
+Data: 19/12/2025
 
 1. Introduzione e Obiettivi
 L'obiettivo del progetto era sviluppare un server compatibile con il Model Context Protocol (MCP) capace di esporre file CSV locali come tabelle interrogabili. Il ruolo dell'IA è stato quello di "Lead Developer" per la generazione del codice Python e il troubleshooting dell'ambiente, mentre io ho agito come "Technical Project Manager", definendo le specifiche, gestendo l'ambiente di esecuzione e validando i risultati (User Acceptance Testing).
@@ -35,4 +37,5 @@ Test Lettura Directory: Il tool list_tables ha restituito correttamente l'array 
 Test Query Dati: Il tool query_data(table_name='prodotti') ha restituito i dati strutturati in formato Markdown, verificando il corretto funzionamento della libreria pandas per il parsing del CSV.
 
 5. Conclusione
+
 Il progetto dimostra come un server MCP possa fungere da ponte efficace tra dati statici (CSV) e interfacce intelligenti. L'uso dell'IA ha accelerato la scrittura del codice "boilerplate", ma la supervisione umana è stata determinante per la configurazione dell'infrastruttura e la risoluzione dei conflitti di sistema (OS-level issues).
