@@ -33,6 +33,11 @@ Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
    ```Bash
    mcp dev server.py
 ```
+Command
+/home/sagon/verifica-esame/venv/bin/python
+
+Arguments
+/home/sagon/verifica-esame/server.py
 
 ## 🧰 Tools Disponibili
 **list_tables**: Elenca i file CSV trovati nella cartella data.
