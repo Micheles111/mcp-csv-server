@@ -31,6 +31,7 @@ Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
 ## ▶️ Utilizzo
 **Avvia il server con l'Inspector MCP per testare le funzionalità:**
    ```Bash
-   mcp dev server.py```
+   mcp dev server.py
+```
 
 ## Avvio
