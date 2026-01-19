@@ -34,14 +34,14 @@ Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
    ```Bash
    mcp dev server.py
 
+---
 
+🧰 Tools Disponibili
+list_tables Elenca i file CSV trovati nella cartella data.
 
-Tools Disponibili
-list_tables: Elenca i file CSV trovati nella cartella data.
+get_schema(table_name) Mostra le colonne e i tipi di dato di un file specifico.
 
-get_schema(table_name): Mostra le colonne e i tipi di dato di un file.
-
-query_data(table_name): Restituisce le prime righe dei dati in formato tabella.
+query_data(table_name) Restituisce le prime righe dei dati in formato tabella.
 
 👤 Autore
 Michele Sagone - Progetto sviluppato con approccio AI-Assisted (Human-in-the-loop).
