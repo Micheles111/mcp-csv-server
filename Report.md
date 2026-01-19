@@ -12,7 +12,7 @@ Il ruolo dell'IA è stato quello di **"Lead Developer"** per la generazione del 
 ## 2. Metodologia e Prompts
 Il lavoro si è svolto in modalità iterativa. Di seguito i principali prompt utilizzati per guidare l'IA:
 
-* **Kick-off & Architettura:** "Il mio obiettivo è diventare un project manager... dimmi tu tutto quello che devo fare passo dopo passo sul mio pc per il progetto MCP Server."
+* **Kick-off & Architettura:**  "Dimmi tu tutto quello che devo fare passo dopo passo sul mio pc per il progetto MCP Server."
 * **Generazione Codice:** "Genera il codice per server.py che soddisfi i requisiti: scansione directory ./data, tool list_tables e tool query_data con pandas."
 * **Troubleshooting Ambiente:** "Error: typer is required. Install with 'pip install mcp[cli]'" e "Impossibile trovare il percorso specificato" (per risolvere i conflitti Windows/WSL).
 
@@ -39,3 +39,4 @@ Il sistema è stato validato utilizzando **MCP Inspector** (interfaccia web di d
 
 ## 5. Conclusione
 Il progetto dimostra come un server MCP possa fungere da ponte efficace tra dati statici (CSV) e interfacce intelligenti. L'uso dell'IA ha accelerato la scrittura del codice "boilerplate", ma la **supervisione umana** è stata determinante per la configurazione dell'infrastruttura e la risoluzione dei conflitti di sistema (OS-level issues).
+
