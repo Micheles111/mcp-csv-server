@@ -14,28 +14,26 @@ Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
    ```bash
    git clone [https://github.com/Micheles111/mcp-csv-server.git](https://github.com/Micheles111/mcp-csv-server.git)
    cd mcp-csv-server
-Crea e attiva l'ambiente virtuale: Su Linux/Mac/WSL:
 
-python3 -m venv venv
-source venv/bin/activate
+2. **Crea e attiva l'ambiente virtuale: Su Linux/Mac/WSL:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
 
-Su Windows:
+2. **Su Windows:**
+   ```DOS
+   python -m venv venv
+   venv\Scripts\activate
 
-DOS
+3. **Installa le dipendenze:**
+   ```Bash
+   pip install "mcp[cli]" pandas
 
-python -m venv venv
-venv\Scripts\activate
-Installa le dipendenze:
-
-Bash
-
-pip install "mcp[cli]" pandas
 ▶️ Utilizzo
-Avvia il server con l'Inspector MCP per testare le funzionalità:
+**Avvia il server con l'Inspector MCP per testare le funzionalità:**
+   ```Bash
+   mcp dev server.py
 
-Bash
-
-mcp dev server.py
 Tools Disponibili
 list_tables: Elenca i file CSV trovati nella cartella data.
 
