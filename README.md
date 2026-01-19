@@ -16,10 +16,9 @@ Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
    cd mcp-csv-server
 Crea e attiva l'ambiente virtuale: Su Linux/Mac/WSL:
 
-Bash
-
 python3 -m venv venv
 source venv/bin/activate
+
 Su Windows:
 
 DOS
