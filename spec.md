@@ -1,15 +1,16 @@
 # Specifiche Tecniche: CSV MCP Server
 
 ## Obiettivo
-[cite_start]Creare un server MCP che espone file CSV locali come tabelle di database.
+Creare un server MCP che espone file CSV locali come tabelle di database, facilitando l'interazione tra LLM e dati strutturati statici.
 
 ## Requisiti Funzionali
-1. [cite_start]**Lettura Directory:** Il server deve scansionare la cartella `./data` all'avvio.
-2. [cite_start]**List Tools:** Deve esporre un tool/resource per elencare tutte le tabelle (file CSV) disponibili[cite: 201].
-3. **Schema Inspection:** Deve permettere di vedere le colonne di un file specifico.
-4. [cite_start]**Query:** Deve permettere di leggere i dati di un CSV, con un filtro opzionale (es. "dammi le righe dove prezzo > 100")[cite: 201].
+1. **Lettura Directory:** Il server deve scansionare automaticamente la cartella `./data` all'avvio per identificare i file disponibili.
+2. **List Tools:** Deve esporre un tool (`list_tables`) per elencare tutti i file CSV trovati.
+3. **Schema Inspection:** Deve permettere di analizzare la struttura (colonne e tipi di dato) di un file specifico tramite `get_schema`.
+4. **Query:** Deve permettere di leggere i dati di un CSV, con la possibilità di limitare il numero di righe o filtrare i risultati tramite `query_data`.
 
 ## Stack Tecnologico
-- Python
-- Libreria `mcp` SDK
-- Libreria `pandas` per il parsing
+- **Linguaggio:** Python 3.x
+- **Core SDK:** `mcp` (Model Context Protocol SDK)
+- **Data Processing:** Libreria `pandas` per il parsing e la manipolazione efficiente dei CSV.
+- **Environment:** Gestione dipendenze tramite `venv` e `pip`.
