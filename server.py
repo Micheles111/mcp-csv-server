@@ -6,7 +6,7 @@ import os
 mcp = FastMCP("CSV Explorer")
 
 # Percorso della cartella dati
-DATA_DIR = os.path.join(os.getcwd(), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 def get_csv_path(table_name: str) -> str:
     """Helper per ottenere il percorso completo di un file CSV."""
@@ -66,4 +66,5 @@ def query_data(table_name: str, limit: int = 5) -> str:
 
 if __name__ == "__main__":
     # Avvia il server
+
     mcp.run()
