@@ -49,8 +49,7 @@ Il server si avvierà su https://www.google.com/search?q=http://0.0.0.0:8000
 - Clicca Connect.
 
 ## 🧰 Tools Disponibili
-
-Lettura Dati
+**Lettura Dati**
 
 **list_tables**: Elenca i file CSV trovati nella cartella data.
 
@@ -58,9 +57,7 @@ Lettura Dati
 
 **query_data(table_name)**: Restituisce le prime righe dei dati in formato tabella.
 
-
-
-Analisi
+**Analisi**
 
 **get_stats**: Report statistico (media, min, max, deviazione std).
 
