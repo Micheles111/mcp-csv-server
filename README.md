@@ -1,73 +1,75 @@
 # 📂 MCP CSV Explorer Server (Analytics Edition)
 
-Un server avanzato compatibile con il **Model Context Protocol (MCP)** che trasforma una cartella di file CSV in un database intelligente interrogabile via IA.
+An advanced server compatible with the **Model Context Protocol (MCP)** that transforms a folder of CSV files into an intelligent database queryable via AI.
 
-## 🚀 Funzionalità
-- **Smart Analytics:** Non solo legge i dati, ma calcola statistiche e cerca pattern.
-- **SSE Transport:** Utilizza *Server-Sent Events* su HTTP per massima compatibilità web.
-- **Dynamic Resources:** Espone automaticamente ogni nuovo file CSV aggiunto.
-- **Smart Prompts:** Include template predefiniti per audit dati, report business e generazione codice.
+## 🚀 Features
+- **Smart Analytics:** Not only reads data but calculates statistics and searches for patterns.
+- **SSE Transport:** Uses *Server-Sent Events* over HTTP for maximum web compatibility.
+- **Dynamic Resources:** Automatically exposes every new CSV file added to the folder.
+- **Smart Prompts:** Includes predefined templates for data auditing, business reports, and code generation.
 
-## 🛠️ Installazione
+## 🛠️ Installation
 
-1. **Clona la repository e vai nella cartella:**
+1. **Clone the repository and enter the folder:**
    ```bash
-   git clone [URL_REPOSITORY]
+   git clone [REPOSITORY_URL]
    cd mcp-csv-server
 
-2. **Crea e attiva l'ambiente virtuale: Su Linux/Mac/WSL:**
+2. **Create and activate the virtual environment:**
+   **On Linux/Mac/WSL:**
    ```bash
    python3 -m venv venv
    source venv/bin/activate
 
-2. **Su Windows:**
+2. **On Windows:**
    ```DOS
    python -m venv venv
    venv\Scripts\activate
-3. **Installa le dipendenze:**
+   
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
 
-## ▶️ Utilizzo
-Poiché il server usa il protocollo SSE, l'avvio richiede due terminali:
+## ▶️ Usage
+Since the server uses the SSE protocol, startup requires two terminals:
 
-**Terminale 1 (Il Server)**:
+**Terminal 1 (The Server):**
    ```bash
    python3 server.py
 ```
-Il server si avvierà su https://www.google.com/search?q=http://0.0.0.0:8000
+The server will start at https://www.google.com/search?q=http://0.0.0.0:8000
 
-**Terminale 2 (IL Client/Inspector)**:
+**Terminal 2 (The Client/Inspector):**
    ```bash
    npx @modelcontextprotocol/inspector
 ```
 
-- Apri il link fornito (es. http://localhost:5173).
-- Seleziona Transport: SSE.
-- Inserisci URL: http://127.0.0.1:8000/sse.
-- Clicca Connect.
+- Open the provided link (e.g., http://localhost:5173).
+- Select Transport: SSE.
+- Enter URL: http://127.0.0.1:8000/sse.
+- Click Connect.
 
-## 🧰 Tools Disponibili
-**Lettura Dati**
+## 🧰 Available Tools
+**Data Reading**
 
-- **list_tables**: Elenca i file CSV trovati nella cartella data.
+- **list_tables:** Lists CSV files found in the data folder.
 
-- **get_schema(table_name)**: Mostra le colonne e i tipi di dato di un file specifico.
+- **get_schema(table_name):** Shows columns and data types for a specific file.
 
-- **query_data(table_name)**: Restituisce le prime righe dei dati in formato tabella.
+- **query_data(table_name):** Returns the first few rows of data in table format.
 
-**Analisi**
+**Analytics**
 
-- **get_stats**: Report statistico (media, min, max, deviazione std).
+- **get_stats:** Statistical report (mean, min, max, std deviation).
 
-- **search_in_table**: Ricerca filtrata case-insensitive.
+- **search_in_table:** Filtered case-insensitive search.
 
 ## 📝 Prompts
-- **analyze_csv_full**: Report completo su un file.
+- **analyze_csv_full:** Complete report on a file.
 
-- **audit_data_quality**: Check integrità dati.
+- **audit_data_quality:** Data integrity check.
 
-- **business_report**: Analisi vendite (Prodotti/Ordini).
+- **business_report:** Sales analysis (Products/Orders).
 
-## 👤 Autore
-Michele Sagone - Progetto sviluppato con approccio AI-Assisted (Human-in-the-loop).
+## 👤 Author
+Michele Sagone - Project developed with an AI-Assisted approach (Human-in-the-loop).
