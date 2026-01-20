@@ -59,6 +59,7 @@ Lettura Dati
 **query_data(table_name)**: Restituisce le prime righe dei dati in formato tabella.
 
 
+
 Analisi
 
 **get_stats**: Report statistico (media, min, max, deviazione std).
@@ -67,8 +68,11 @@ Analisi
 
 ## 📝 Prompts
 **analyze_csv_full**: Report completo su un file.
+
 **audit_data_quality**: Check integrità dati.
+
 **business_report**: Analisi vendite (Prodotti/Ordini).
+
 
 ## 👤 Autore
 Michele Sagone - Progetto sviluppato con approccio AI-Assisted (Human-in-the-loop).
