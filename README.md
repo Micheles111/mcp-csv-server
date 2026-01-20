@@ -32,13 +32,13 @@ Un server avanzato compatibile con il **Model Context Protocol (MCP)** che trasf
 ## ▶️ Utilizzo
 **Poiché il server usa il protocollo SSE, l'avvio richiede due terminali::**
 
-Terminale 1(Il serve):
+**Terminale 1(Il Server)**:
    ```bash
    python3 server.py
 ```
 Il server si avvierà su https://www.google.com/search?q=http://0.0.0.0:8000
 
-Terminale 2(l Client/Inspector):
+**Terminale 2(IL Client/Inspector)**:
    ```bash
    npx @modelcontextprotocol/inspector
 ```
