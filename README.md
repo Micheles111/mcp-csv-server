@@ -29,7 +29,7 @@ Un server avanzato compatibile con il **Model Context Protocol (MCP)** che trasf
    pip install -r requirements.txt
 
 ## ▶️ Utilizzo
-**Poiché il server usa il protocollo SSE, l'avvio richiede due terminali::**
+Poiché il server usa il protocollo SSE, l'avvio richiede due terminali:
 
 **Terminale 1(Il Server)**:
    ```bash
