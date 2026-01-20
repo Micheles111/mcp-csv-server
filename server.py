@@ -6,22 +6,25 @@ import os
 mcp = FastMCP("CSV Explorer")
 
 # Percorso della cartella dati
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
 def get_csv_path(table_name: str) -> str:
     """Helper per ottenere il percorso completo di un file CSV."""
-    # Aggiunge .csv se manca
     if not table_name.endswith('.csv'):
         filename = f"{table_name}.csv"
     else:
         filename = table_name
-    
     return os.path.join(DATA_DIR, filename)
+
+# --- TOOLS (Le funzioni operative) ---
 
 @mcp.tool()
 def list_tables() -> list[str]:
     """Elenca tutti i file CSV disponibili nella cartella dati."""
     try:
+        if not os.path.exists(DATA_DIR):
+            return []
         files = [f for f in os.listdir(DATA_DIR) if f.endswith('.csv')]
         # Rimuoviamo l'estensione per pulizia visiva
         tables = [f.replace('.csv', '') for f in files]
@@ -59,12 +62,44 @@ def query_data(table_name: str, limit: int = 5) -> str:
     
     try:
         df = pd.read_csv(path)
-        # Restituiamo i dati in formato Markdown per facile lettura da parte dell'LLM
+        # Restituiamo i dati in formato Markdown (richiede 'tabulate')
         return df.head(limit).to_markdown(index=False)
     except Exception as e:
         return f"Errore durante la query: {str(e)}"
 
-if __name__ == "__main__":
-    # Avvia il server
+# --- RISORSE (Lettura diretta dei file) ---
 
+def register_resources():
+    """Scansiona la cartella e registra ogni CSV come risorsa."""
+    if not os.path.exists(DATA_DIR):
+        return
+
+    for filename in os.listdir(DATA_DIR):
+        if filename.endswith('.csv'):
+            # Creiamo l'URI univoco (es. csv://prodotti.csv)
+            resource_uri = f"csv://{filename}"
+            full_path = os.path.join(DATA_DIR, filename)
+            
+            # Funzione Factory per evitare problemi di scope nei cicli
+            def make_reader(p):
+                def reader():
+                    with open(p, "r", encoding="utf-8") as f:
+                        return f.read()
+                return reader
+
+            # Creiamo la funzione di lettura specifica per questo file
+            reader_func = make_reader(full_path)
+            
+            # ASSEGNAZIONE NOME: Fondamentale per evitare crash su FastMCP
+            # Sostituiamo caratteri non validi per i nomi di funzione Python
+            safe_name = filename.replace(".", "_").replace("-", "_")
+            reader_func.__name__ = f"read_{safe_name}"
+            
+            # Registrazione effettiva
+            mcp.resource(resource_uri)(reader_func)
+
+# Eseguiamo la registrazione prima di avviare il server
+register_resources()
+
+if __name__ == "__main__":
     mcp.run()
