@@ -52,7 +52,7 @@ Il server si avvierà su https://www.google.com/search?q=http://0.0.0.0:8000
 
 Lettura Dati
 
-**list_tables**: Elenca i file CSV trovati nella cartella data.
+**list_tables**: Elenca i file CSV trovati nella cartella data.\n
 **get_schema(table_name)**: Mostra le colonne e i tipi di dato di un file specifico.
 **query_data(table_name)**: Restituisce le prime righe dei dati in formato tabella.
 
