@@ -1,18 +1,18 @@
-# 📂 MCP CSV Explorer Server
+# 📂 MCP CSV Explorer Server (Analytics Edition)
 
-Un server compatibile con il **Model Context Protocol (MCP)** che espone file CSV locali come tabelle interrogabili tramite API.
-Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
+Un server avanzato compatibile con il **Model Context Protocol (MCP)** che trasforma una cartella di file CSV in un database intelligente interrogabile via IA.
 
 ## 🚀 Funzionalità
-- **Scansione Automatica:** Legge tutti i file `.csv` nella cartella `./data`.
-- **Schema Inspection:** Espone i tipi di dati delle colonne.
-- **Querying:** Permette di visualizzare e filtrare i dati dei CSV.
+- **Smart Analytics:** Non solo legge i dati, ma calcola statistiche e cerca pattern.
+- **SSE Transport:** Utilizza *Server-Sent Events* su HTTP per massima compatibilità web.
+- **Dynamic Resources:** Espone automaticamente ogni nuovo file CSV aggiunto.
+- **Smart Prompts:** Include template predefiniti per audit dati, report business e generazione codice.
 
 ## 🛠️ Installazione
 
-1. **Clona la repository:**
+1. **Clona la repository e vai nella cartella:**
    ```bash
-   git clone [https://github.com/Micheles111/mcp-csv-server.git](https://github.com/Micheles111/mcp-csv-server.git)
+   git clone [URL_REPOSITORY]
    cd mcp-csv-server
 
 2. **Crea e attiva l'ambiente virtuale: Su Linux/Mac/WSL:**
@@ -24,25 +24,43 @@ Sviluppato come progetto per il corso di Advanced Programming (Progetto B06).
    ```DOS
    python -m venv venv
    venv\Scripts\activate
+   
 3. **Installa le dipendenze:**
-   ```Bash
-   pip install "mcp[cli]" pandas
+   ```bash
+   pip install -r requirements.txt
 
 ## ▶️ Utilizzo
-**Avvia il server con l'Inspector MCP per testare le funzionalità:**
-   ```Bash
-   mcp dev server.py
+**Poiché il server usa il protocollo SSE, l'avvio richiede due terminali::**
+Terminale 1(Il serve):
+   ```bash
+   python3 server.py
 ```
-Command: /home/sagon/mcp-csv-server/venv/bin/python
+Il server si avvierà su https://www.google.com/search?q=http://0.0.0.0:8000
 
-Arguments: /home/sagon/mcp-csv-server/server.py
+Terminale 2(l Client/Inspector):
+   ```bash
+   npx @modelcontextprotocol/inspector
+```
+
+- Apri il link fornito (es. http://localhost:5173).
+- Seleziona Transport: SSE.
+- Inserisci URL: http://127.0.0.1:8000/sse.
+- Clicca Connect.
 
 ## 🧰 Tools Disponibili
+Lettura Dati
 **list_tables**: Elenca i file CSV trovati nella cartella data.
-
 **get_schema(table_name)**: Mostra le colonne e i tipi di dato di un file specifico.
-
 **query_data(table_name)**: Restituisce le prime righe dei dati in formato tabella.
+
+Analisi
+**get_stats**: Report statistico (media, min, max, deviazione std).
+**search_in_table**: Ricerca filtrata case-insensitive.
+
+## 📝 Prompts
+**analyze_csv_full**: Report completo su un file.
+**audit_data_quality**: Check integrità dati.
+**business_report**: Analisi vendite (Prodotti/Ordini).
 
 ## 👤 Autore
 Michele Sagone - Progetto sviluppato con approccio AI-Assisted (Human-in-the-loop).
