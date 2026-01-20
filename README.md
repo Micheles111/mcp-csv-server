@@ -69,6 +69,5 @@ Il server si avvierà su https://www.google.com/search?q=http://0.0.0.0:8000
 
 - **business_report**: Analisi vendite (Prodotti/Ordini).
 
-
 ## 👤 Autore
 Michele Sagone - Progetto sviluppato con approccio AI-Assisted (Human-in-the-loop).
