@@ -24,7 +24,6 @@ Un server avanzato compatibile con il **Model Context Protocol (MCP)** che trasf
    ```DOS
    python -m venv venv
    venv\Scripts\activate
-   
 3. **Installa le dipendenze:**
    ```bash
    pip install -r requirements.txt
@@ -64,9 +63,9 @@ Il server si avvierà su https://www.google.com/search?q=http://0.0.0.0:8000
 - **search_in_table**: Ricerca filtrata case-insensitive.
 
 ## 📝 Prompts
-**analyze_csv_full**: Report completo su un file.
+- **analyze_csv_full**: Report completo su un file.
 
-**audit_data_quality**: Check integrità dati.
+- **audit_data_quality**: Check integrità dati.
 
 **business_report**: Analisi vendite (Prodotti/Ordini).
 
