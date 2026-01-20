@@ -2,37 +2,37 @@ from mcp.server.fastmcp import FastMCP
 import pandas as pd
 import os
 
-# Inizializzazione del Server MCP
+# MCP Server Initialization
 mcp = FastMCP("CSV Explorer")
 
-# Configurazione Percorsi
+# Path Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 def get_csv_path(table_name: str) -> str:
-    """Helper per ottenere il percorso completo."""
+    """Helper to get the full path of a CSV file."""
     if not table_name.endswith('.csv'):
         filename = f"{table_name}.csv"
     else:
         filename = table_name
     return os.path.join(DATA_DIR, filename)
 
-# --- TOOLS BASE (Lettura e Schema) ---
+# --- BASE TOOLS (Read & Schema) ---
 
 @mcp.tool()
 def list_tables() -> list[str]:
-    """Elenca tutti i file CSV disponibili nella cartella data."""
+    """Lists all available CSV files in the data directory."""
     try:
         if not os.path.exists(DATA_DIR): return []
         return [f.replace('.csv', '') for f in os.listdir(DATA_DIR) if f.endswith('.csv')]
     except Exception as e:
-        return [f"Errore: {str(e)}"]
+        return [f"Error: {str(e)}"]
 
 @mcp.tool()
 def get_schema(table_name: str) -> dict:
-    """Restituisce colonne e tipi di dato."""
+    """Returns columns and data types for a specific table."""
     path = get_csv_path(table_name)
-    if not os.path.exists(path): return {"error": "File non trovato"}
+    if not os.path.exists(path): return {"error": "File not found"}
     try:
         df = pd.read_csv(path)
         return df.dtypes.apply(lambda x: x.name).to_dict()
@@ -41,108 +41,108 @@ def get_schema(table_name: str) -> dict:
 
 @mcp.tool()
 def query_data(table_name: str, limit: int = 5) -> str:
-    """Legge le prime righe della tabella."""
+    """Reads the first N rows of a table."""
     path = get_csv_path(table_name)
-    if not os.path.exists(path): return "Errore: File non trovato"
+    if not os.path.exists(path): return "Error: File not found"
     try:
         df = pd.read_csv(path)
         return df.head(limit).to_markdown(index=False)
     except Exception as e:
-        return f"Errore: {str(e)}"
+        return f"Error: {str(e)}"
 
-# --- TOOLS DI ANALISI (Analytics) ---
+# --- ANALYTICS TOOLS ---
 
 @mcp.tool()
 def get_stats(table_name: str) -> str:
-    """Statistiche descrittive (media, min, max) sui campi numerici."""
+    """Returns descriptive statistics (mean, min, max) for numeric columns."""
     path = get_csv_path(table_name)
-    if not os.path.exists(path): return "Errore: File non trovato"
+    if not os.path.exists(path): return "Error: File not found"
     try:
         df = pd.read_csv(path)
         return df.describe().to_markdown()
     except Exception as e:
-        return f"Errore stats: {str(e)}"
+        return f"Stats Error: {str(e)}"
 
 @mcp.tool()
 def search_in_table(table_name: str, column: str, value: str) -> str:
-    """Cerca righe specifiche in una colonna (case-insensitive)."""
+    """Searches for specific rows in a column (case-insensitive)."""
     path = get_csv_path(table_name)
-    if not os.path.exists(path): return "Errore: Tabella non trovata."
+    if not os.path.exists(path): return "Error: Table not found."
     try:
         df = pd.read_csv(path)
         if column not in df.columns:
-            return f"Errore: Colonna '{column}' non trovata."
+            return f"Error: Column '{column}' not found."
         filtered = df[df[column].astype(str).str.contains(value, case=False, na=False)]
-        if filtered.empty: return "Nessun risultato."
+        if filtered.empty: return "No results found."
         return filtered.to_markdown(index=False)
     except Exception as e:
-        return f"Errore ricerca: {str(e)}"
+        return f"Search Error: {str(e)}"
 
-# --- PROMPTS (Template Predefiniti) ---
+# --- PROMPTS (Pre-defined Templates) ---
 
 @mcp.prompt()
 def analyze_csv_full(table_name: str) -> str:
-    """Analisi completa di una tabella (Struttura + Dati + Statistiche)."""
+    """Complete analysis of a table (Structure + Data + Statistics)."""
     return f"""
-    Agisci come un Data Scientist esperto. Analizza la tabella '{table_name}' eseguendo questi passaggi:
-    1. Usa get_schema('{table_name}') per capire la struttura.
-    2. Usa query_data('{table_name}') per vedere un campione di dati.
-    3. Usa get_stats('{table_name}') per analizzare i valori numerici.
+    Act as an expert Data Scientist. Analyze the table '{table_name}' by following these steps:
+    1. Use get_schema('{table_name}') to understand the structure.
+    2. Use query_data('{table_name}') to see a sample of the data.
+    3. Use get_stats('{table_name}') to analyze numeric values.
     
-    Fornisci un report riassuntivo che spieghi cosa contengono i dati e quali pattern noti.
+    Provide a summary report explaining what the data contains and any notable patterns.
     """
 
 @mcp.prompt()
 def audit_data_quality(table_name: str) -> str:
-    """Controlla la qualità dei dati cercando errori o valori mancanti."""
+    """Checks data quality by looking for errors or missing values."""
     return f"""
-    Esegui un audit di qualità sulla tabella '{table_name}'.
-    1. Controlla lo schema per tipi di dati inaspettati.
-    2. Usa get_stats per identificare outlier (valori minimi/massimi sospetti).
-    3. Cerca eventuali incongruenze logiche nei dati.
+    Perform a quality audit on the table '{table_name}'.
+    1. Check the schema for unexpected data types.
+    2. Use get_stats to identify outliers (suspicious min/max values).
+    3. Look for any logical inconsistencies in the data.
     
-    Restituisci una lista di "Warning" se trovi qualcosa di strano, altrimenti certifica che i dati sono puliti.
+    Return a list of "Warnings" if you find anything strange, otherwise certify that the data is clean.
     """
 
 @mcp.prompt()
 def business_report() -> str:
-    """Genera un report di business incrociando Prodotti e Ordini."""
+    """Generates a business report by crossing Products and Orders."""
     return """
-    Analizza l'andamento del business usando le tabelle 'prodotti' e 'ordini'.
-    1. Identifica quali sono i prodotti più venduti (puoi usare get_stats o query_data).
-    2. Usa search_in_table per trovare eventuali ordini 'Annullati' o problematici.
+    Analyze business performance using the tables 'products' and 'orders'.
+    1. Identify the best-selling products (you can use get_stats or query_data).
+    2. Use search_in_table to find any 'Cancelled' or problematic orders.
     
-    Scrivi un breve memo per il CEO con i risultati chiave.
+    Write a short memo for the CEO with key results.
     """
 
 @mcp.prompt()
 def generate_python_script(table_name: str) -> str:
-    """Genera uno script Python standalone per analizzare questo file."""
+    """Generates a standalone Python script to analyze this file."""
     return f"""
-    Non eseguire analisi ora. Invece, scrivi un codice Python completo che io possa copiare e incollare.
-    Il codice deve:
-    - Caricare il file '{table_name}.csv' usando pandas.
-    - Creare un grafico a barre usando matplotlib (basato sui dati che vedi nello schema).
-    - Salvare il grafico come immagine.
+    Do not perform analysis now. Instead, write a complete Python script that I can copy and paste.
+    The code must:
+    - Load the file '{table_name}.csv' using pandas.
+    - Create a bar chart using matplotlib (based on data you see in the schema).
+    - Save the chart as an image.
     
-    Usa get_schema('{table_name}') per sapere quali colonne usare nel grafico.
+    Use get_schema('{table_name}') to know which columns to use for the chart.
     """
 
 @mcp.prompt()
 def explain_relationships() -> str:
-    """Spiega come sono collegate le tabelle tra loro (Entity Relationship)."""
+    """Explains how tables are connected (Entity Relationship)."""
     return """
-    Esamina tutte le tabelle disponibili con list_tables().
-    Per ogni tabella, richiedi lo schema.
+    Examine all available tables with list_tables().
+    For each table, request the schema.
     
-    Cerca di dedurre le relazioni (Foreign Keys) tra le tabelle basandoti sui nomi delle colonne (es. id_utente, id_prodotto).
-    Disegna un diagramma ER testuale (mermaid o ASCII) che mostri le connessioni tra i file.
+    Try to deduce the relationships (Foreign Keys) between the tables based on column names (e.g., user_id, product_id).
+    Draw a text-based ER diagram (mermaid or ASCII) showing the connections between files.
     """
 
-# --- RISORSE DINAMICHE ---
+# --- DYNAMIC RESOURCES ---
 
 def register_resources():
-    """Scansiona la cartella e registra ogni CSV come risorsa."""
+    """Scans the folder and registers each CSV as a resource."""
     if not os.path.exists(DATA_DIR): return
 
     for filename in os.listdir(DATA_DIR):
@@ -154,7 +154,7 @@ def register_resources():
                 return lambda: open(p, "r", encoding="utf-8").read()
 
             reader = make_reader(full_path)
-            # Nome univoco obbligatorio per SSE
+            # Unique name mandatory for SSE
             clean_name = filename.replace(".", "_").replace("-", "_")
             reader.__name__ = f"read_{clean_name}"
             
@@ -163,5 +163,5 @@ def register_resources():
 register_resources()
 
 if __name__ == "__main__":
-    # Avvio in modalità SSE sulla porta 8000
+    # Start in SSE mode on port 8000
     mcp.run(transport='sse')

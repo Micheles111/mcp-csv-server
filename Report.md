@@ -1,58 +1,58 @@
 # B06 - AI-Assisted MCP Server: Project Report
 
-**Studente:** Michele Sagone
-**Progetto:** B06 - MCP Server Exposing CSV Directory
-**Data:** 19/12/2025
+**Student:** Michele Sagone
+**Project:** B06 - MCP Server Exposing CSV Directory
+**Date:** 19/12/2025
 
-## 1. Introduzione e Obiettivi
-L'obiettivo del progetto era sviluppare un server compatibile con il Model Context Protocol (MCP) capace di esporre file CSV locali come tabelle interrogabili.
-Il ruolo dell'IA è stato quello di **"Lead Developer"** per la generazione del codice Python, mentre io ho agito come **"Technical Project Manager"**, definendo le specifiche, gestendo l'ambiente (WSL) e validando i risultati.
+## 1. Introduction and Objectives
+The goal of this project was to develop a server compatible with the Model Context Protocol (MCP) capable of exposing local CSV files as queryable tables.
+The role of AI was that of a **"Lead Developer"** for generating Python code, while I acted as the **"Technical Project Manager"**, defining specifications, managing the execution environment (WSL), and validating the results.
 
-## 2. Metodologia e Prompts (Chain of Thought)
-Lo sviluppo è avvenuto attraverso una serie di iterazioni mirate. Di seguito sono riportati i 5 prompt principali che hanno definito l'architettura del server:
+## 2. Methodology and Prompts (Chain of Thought)
+Development took place through a series of targeted iterations. Below are the 5 main prompts used to define the server architecture:
 
-### Prompt 1: Setup dell'Infrastruttura Base
-**Obiettivo:** Creare lo scheletro del server e la lettura file.
-> "Agisci come un Senior Python Developer. Voglio creare un server MCP usando la libreria `fastmcp`. Il server deve scansionare una cartella locale `./data`, trovare tutti i file `.csv` e creare automaticamente un tool `list_tables` per elencarli. Usa `os` per la gestione dei percorsi in modo compatibile con Linux/WSL."
+### Prompt 1: Basic Infrastructure Setup
+**Objective:** Create the server skeleton and file scanning logic.
+> "Act as a Senior Python Developer. I want to create an MCP server using the `fastmcp` library. The server must scan a local folder `./data`, find all `.csv` files, and automatically create a `list_tables` tool to list them. Use `os` for path management in a way that is compatible with Linux/WSL."
 
 ### Prompt 2: Data Retrieval & Formatting
-**Obiettivo:** Implementare la lettura dei dati e risolvere il problema della formattazione.
-> "Ho bisogno di un tool `query_data(table_name, limit)` che legga un CSV con Pandas e restituisca le righe in formato Markdown per renderle leggibili all'LLM. Se ottengo l'errore `Missing optional dependency 'tabulate'`, dimmi esattamente come risolverlo nel mio ambiente virtuale."
+**Objective:** Implement data reading and resolve formatting issues.
+> "I need a tool `query_data(table_name, limit)` that reads a CSV using Pandas and returns the rows in Markdown format to make them readable for the LLM. If I get the `Missing optional dependency 'tabulate'` error, tell me exactly how to fix it in my virtual environment."
 
-### Prompt 3: Implementazione Risorse Dinamiche
-**Obiettivo:** Esporre i file come risorse passive (non solo tools).
-> "Voglio che ogni file CSV nella cartella appaia nella tab 'Resources' dell'Inspector come `csv://nomefile.csv`. Scrivi una funzione che itera sui file e usa `@mcp.resource` per registrarli dinamicamente. Attenzione: assicurati che le funzioni di lettura non si sovrascrivano a vicenda nel ciclo for (problema di closure delle lambda)."
+### Prompt 3: Dynamic Resource Implementation
+**Objective:** Expose files as passive resources (not just tools).
+> "I want every CSV file in the folder to appear in the Inspector's 'Resources' tab as `csv://filename.csv`. Write a function that iterates over the files and uses `@mcp.resource` to register them dynamically. Warning: ensure that the reading functions do not overwrite each other in the for loop (lambda closure issue)."
 
-### Prompt 4: Cambio Architettura (Da STDIO a SSE)
-**Obiettivo:** Rendere il server accessibile via rete/web.
-> "Modifica il file `server.py`. Invece di usare il trasporto standard (STDIO), voglio usare SSE (Server-Sent Events) su HTTP. Configura `mcp.run()` per usare `uvicorn` sulla porta 8000 e spiegami come devo cambiare il comando di avvio nel terminale."
+### Prompt 4: Architecture Change (From STDIO to SSE)
+**Objective:** Make the server accessible via network/web.
+> "Modify the `server.py` file. Instead of using standard transport (STDIO), I want to use SSE (Server-Sent Events) over HTTP. Configure `mcp.run()` to use `uvicorn` on port 8000 and explain how I should change the startup command in the terminal."
 
-### Prompt 5: Analisi Avanzata dei Dati
-**Obiettivo:** Aggiungere intelligenza al server (Analytics).
-> "I dati grezzi sono troppi per l'LLM. Crea due nuovi tool avanzati:
-> 1. `get_stats(table_name)`: che usa `pandas.describe()` per darmi media, min e max delle colonne numeriche.
-> 2. `search_in_table(table_name, column, value)`: per cercare righe specifiche ignorando maiuscole/minuscole.
-> Il codice deve essere robusto e gestire errori se la colonna non esiste."
+### Prompt 5: Advanced Data Analytics
+**Objective:** Add intelligence to the server (Analytics).
+> "Raw data is too much for the LLM to process. Create two new advanced tools:
+> 1. `get_stats(table_name)`: uses `pandas.describe()` to give me the mean, min, and max of numeric columns.
+> 2. `search_in_table(table_name, column, value)`: to search for specific rows, ignoring case sensitivity.
+> The code must be robust and handle errors if the column does not exist."
 
-## 3. Verifica e Correzioni (QA & Debugging)
-Durante lo sviluppo, il codice generato dall'IA era sintatticamente corretto, ma l'integrazione con l'ambiente locale ha richiesto interventi manuali:
-* **Dipendenze:** Installazione manuale di `tabulate` e `uvicorn` mancanti nei primi output dell'IA.
-* **WSL vs Windows:** Risoluzione dei percorsi assoluti per permettere a Node.js (Inspector) di comunicare con Python (Server) attraverso il sottosistema Linux.
+## 3. Verification and Corrections (QA & Debugging)
+During development, the code generated by the AI was syntactically correct, but integration with the local environment required critical manual interventions:
+* **Dependencies:** Manual installation of `tabulate` and `uvicorn`, which were missing in the AI's initial outputs.
+* **WSL vs. Windows:** Resolution of absolute paths to allow Node.js (Inspector) to communicate with the Python (Server) through the Linux subsystem.
 
-## 4. Evoluzione del Progetto: Analisi e SSE
-Nella fase finale dello sviluppo, abbiamo esteso le funzionalità base per rendere il server più robusto:
+## 4. Project Evolution: Analytics and SSE
+In the final phase of development, we extended the basic functionalities to make the server more robust:
 
-### Miglioramento 1: Da STDIO a SSE
-Siamo passati dal trasporto standard (STDIO) a **SSE (Server-Sent Events)** su HTTP.
-* **Motivazione:** Permette di disaccoppiare il server dal client, facilitando il debugging tramite Inspector Web e preparando il sistema per integrazioni future.
+### Improvement 1: From STDIO to SSE
+We switched from standard input/output (STDIO) transport to **SSE (Server-Sent Events)** over HTTP.
+* **Motivation:** This allows decoupling the server from the client, facilitating debugging via the Web Inspector and preparing the system for future integrations.
 
-### Miglioramento 2: Tool di Analisi
-Abbiamo notato che l'IA faticava a calcolare statistiche leggendo righe grezze. Abbiamo quindi implementato due nuovi tool nativi in Python:
-1.  **`get_stats`**: Delega a Pandas il calcolo matematico, restituendo all'IA un riassunto affidabile.
-2.  **`search_in_table`**: Permette di cercare record specifici (es. ordini di un utente) senza dover leggere l'intero file.
+### Improvement 2: Analytics Tools
+We noticed that the AI struggled to calculate statistics by reading raw rows. We therefore implemented two new native Python tools:
+1. **`get_stats`**: Delegates mathematical calculations to Pandas, returning a reliable summary to the AI.
+2. **`search_in_table`**: Allows searching for specific records (e.g., orders for a user) without having to read the entire file.
 
-### Miglioramento 3: Prompt Template
-Sono stati aggiunti template predefiniti (es. `audit_data_quality`) direttamente nel server per standardizzare le richieste più comuni e automatizzare l'analisi dei CSV.
+### Improvement 3: Prompt Templates
+Predefined templates (e.g., `audit_data_quality`) were added directly to the server to standardize common requests and automate CSV analysis.
 
-## 5. Conclusione
-Il progetto dimostra come un server MCP ben configurato possa trasformare una semplice cartella di file statici in un "database intelligente". L'uso di tool specifici per l'analisi (`get_stats`) invece della sola lettura grezza (`query_data`) ha migliorato notevolmente le performance dell'LLM, riducendo errori di calcolo e consumo di token.
+## 5. Conclusion
+The project demonstrates how a well-configured MCP server can transform a simple folder of static files into a "smart database." The use of specific tools for analysis (`get_stats`) instead of just reading raw data (`query_data`) significantly improved LLM performance, reducing calculation errors and token consumption.

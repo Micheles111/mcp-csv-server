@@ -1,24 +1,24 @@
-# Specifiche Tecniche: CSV MCP Server
+# Technical Specifications: CSV MCP Server
 
-## Obiettivo
-Sviluppare un server MCP "Analytics-Ready" che esponga file CSV locali non solo come dati grezzi, ma come informazioni strutturate e analizzabili dagli LLM, facilitando il data mining e la business intelligence automatizzata.
+## Objective
+To develop an "Analytics-Ready" MCP server that exposes local CSV files not just as raw data, but as structured and analyzable information for LLMs, facilitating data mining and automated business intelligence.
 
-## Requisiti Funzionali
-1. **Transport Layer (SSE):** Il server deve utilizzare il protocollo Server-Sent Events (SSE) su HTTP (porta 8000) per garantire la compatibilità con client web e interfacce di debugging remote, sostituendo il trasporto standard input/output (STDIO).
-2. **Dynamic Resource Registry:** Scansione automatica della cartella `./data` all'avvio ed esposizione dei file come Risorse MCP (`csv://nomefile.csv`) per la lettura diretta del contenuto grezzo.
+## Functional Requirements
+1. **Transport Layer (SSE):** The server must use the Server-Sent Events (SSE) protocol over HTTP (port 8000) to ensure compatibility with web clients and remote debugging interfaces, replacing standard input/output (STDIO) transport.
+2. **Dynamic Resource Registry:** Automatic scanning of the `./data` folder at startup and exposure of files as MCP Resources (`csv://filename.csv`) for direct reading of raw content.
 3. **Data Inspection:**
-   - `list_tables`: Elenco dei dataset disponibili.
-   - `get_schema`: Analisi della struttura (colonne e tipi di dato).
-   - `query_data`: Anteprima dei dati tabellari formattati in Markdown.
+   - `list_tables`: List of available datasets.
+   - `get_schema`: Structure analysis (columns and data types).
+   - `query_data`: Preview of tabular data formatted in Markdown.
 4. **Data Analytics:**
-   - Implementazione di `get_stats` per calcolare automaticamente statistiche descrittive (media, min, max) tramite Pandas, riducendo il consumo di token per l'LLM.
-   - Implementazione di `search_in_table` per eseguire ricerche filtrate "case-insensitive" su colonne specifiche.
-5. **Prompt Engineering:** Integrazione di template predefiniti (`@mcp.prompt`) per guidare l'IA in task complessi come l'audit della qualità dei dati, la generazione di report di business e la creazione di script Python.
+   - Implementation of `get_stats` to automatically calculate descriptive statistics (mean, min, max) using Pandas, reducing LLM token consumption.
+   - Implementation of `search_in_table` to perform filtered "case-insensitive" searches on specific columns.
+5. **Prompt Engineering:** Integration of predefined templates (`@mcp.prompt`) to guide the AI in complex tasks such as data quality auditing, business report generation, and Python script creation.
 
-## Stack Tecnologico
-- **Linguaggio:** Python 3.x
+## Technology Stack
+- **Language:** Python 3.x
 - **Core SDK:** `mcp` (Model Context Protocol SDK - FastMCP).
-- **Server:** `uvicorn` (ASGI Server per gestire le connessioni SSE).
-- **Data Processing:** Libreria `pandas` per il parsing, l'analisi statistica e il filtraggio efficiente dei CSV.
-- **Output Formatting:** Libreria `tabulate` per la conversione dei DataFrame in tabelle Markdown leggibili dall'LLM.
-- **Environment:** Gestione dipendenze isolata tramite `venv`.
+- **Server:** `uvicorn` (ASGI Server to manage SSE connections).
+- **Data Processing:** `pandas` library for parsing, statistical analysis, and efficient CSV filtering.
+- **Output Formatting:** `tabulate` library for converting DataFrames into Markdown tables readable by the LLM.
+- **Environment:** Isolated dependency management via `venv`.

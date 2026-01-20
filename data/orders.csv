@@ -1,0 +1,7 @@
+id,user_id,product_id,quantity,order_date,status
+5001,101,1,1,2025-01-10,Shipped
+5002,102,2,2,2025-01-11,Delivered
+5003,101,5,3,2025-01-12,Processing
+5004,103,1,1,2025-01-13,Cancelled
+5005,102,4,1,2025-01-14,Shipped
+5006,101,2,1,2025-01-15,Delivered

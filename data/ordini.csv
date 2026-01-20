@@ -1,7 +1,0 @@
-id,id_utente,id_prodotto,quantita,data_ordine,status
-5001,101,1,1,2025-01-10,Spedito
-5002,102,2,2,2025-01-11,Consegnato
-5003,101,5,3,2025-01-12,In elaborazione
-5004,103,1,1,2025-01-13,Annullato
-5005,102,4,1,2025-01-14,Spedito
-5006,101,2,1,2025-01-15,Consegnato
