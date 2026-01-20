@@ -31,6 +31,7 @@ Un server avanzato compatibile con il **Model Context Protocol (MCP)** che trasf
 
 ## ▶️ Utilizzo
 **Poiché il server usa il protocollo SSE, l'avvio richiede due terminali::**
+
 Terminale 1(Il serve):
    ```bash
    python3 server.py
