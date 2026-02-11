@@ -1,24 +1,46 @@
-# Technical Specifications: CSV MCP Server
+# Technical Specifications: MCP CSV Explorer (Analytics Edition)
 
-## Objective
-To develop an "Analytics-Ready" MCP server that exposes local CSV files not just as raw data, but as structured and analyzable information for LLMs, facilitating data mining and automated business intelligence.
+## 1. Objective
+To develop an "Analytics-Ready" **Model Context Protocol (MCP)** server that exposes local CSV files not just as raw text, but as a structured, queryable knowledge base. The system emphasizes **Deterministic Analytics** to reduce LLM hallucinations and **Type Safety** for reliability.
 
-## Functional Requirements
-1. **Transport Layer (SSE):** The server must use the Server-Sent Events (SSE) protocol over HTTP (port 8000) to ensure compatibility with web clients and remote debugging interfaces, replacing standard input/output (STDIO) transport.
-2. **Dynamic Resource Registry:** Automatic scanning of the `./data` folder at startup and exposure of files as MCP Resources (`csv://filename.csv`) for direct reading of raw content.
-3. **Data Inspection:**
-   - `list_tables`: List of available datasets.
-   - `get_schema`: Structure analysis (columns and data types).
-   - `query_data`: Preview of tabular data formatted in Markdown.
-4. **Data Analytics:**
-   - Implementation of `get_stats` to automatically calculate descriptive statistics (mean, min, max) using Pandas, reducing LLM token consumption.
-   - Implementation of `search_in_table` to perform filtered "case-insensitive" searches on specific columns.
-5. **Prompt Engineering:** Integration of predefined templates (`@mcp.prompt`) to guide the AI in complex tasks such as data quality auditing, business report generation, and Python script creation.
+## 2. Architecture & Tech Stack
+* **Language:** Python 3.10+ (Strongly Typed).
+* **Core SDK:** `mcp[cli]` (FastMCP).
+* **Transport Layer:** Server-Sent Events (SSE) over HTTP (Port 8000).
+    * *Rationale:* Decouples server execution from client interaction, enabling remote debugging via the **MCP Inspector**.
+* **Data Engine:** `pandas` (NumPy backend).
+    * *Rationale:* Provides **Vectorized** operations for high-performance filtering and **Deterministic** statistical computation.
+* **Output Formatting:** `tabulate` (Markdown serialization).
 
-## Technology Stack
-- **Language:** Python 3.x
-- **Core SDK:** `mcp` (Model Context Protocol SDK - FastMCP).
-- **Server:** `uvicorn` (ASGI Server to manage SSE connections).
-- **Data Processing:** `pandas` library for parsing, statistical analysis, and efficient CSV filtering.
-- **Output Formatting:** `tabulate` library for converting DataFrames into Markdown tables readable by the LLM.
-- **Environment:** Isolated dependency management via `venv`.
+## 3. Functional Requirements
+
+### 3.1 Transport & Connectivity
+* **SSE Protocol:** The server must use an Asynchronous Event Loop (`uvicorn`) to manage non-blocking I/O connections.
+* **Endpoint:** Expose `http://0.0.0.0:8000/sse` for client consumption.
+
+### 3.2 Data Marshalling & Introspection
+* **Dynamic Discovery:** Automatically scan the `./data` directory at runtime using Reflection-like mechanisms to register resources.
+* **Schema Extraction:** Implement `get_schema` to return strict data types (`int64`, `float64`, `object`) to the LLM.
+* **Markdown Serialization:** Convert tabular data into Markdown format for optimal LLM context window usage.
+
+### 3.3 Analytics & Logic
+* **Deterministic Stats:** Implement `get_stats` to offload mathematical computations (Mean, Min, Max, StdDev) to the CPU, preventing LLM arithmetic errors.
+* **Vectorized Search:** Implement `search_in_table` using Pandas vectorization ($O(n)$ or better) instead of Python loops.
+
+### 3.4 Security
+* **Path Traversal Prevention:** Ensure all file access is strictly confined to the `data/` directory using absolute path resolution (`os.path.abspath`).
+* **Dependency Isolation:** Strict adherence to `requirements.txt` and `venv` for reproducibility.
+
+## 4. API Definition (Tools)
+The server exposes the following strictly-typed tools:
+
+* `list_tables() -> List[str]`
+* `get_schema(table_name: str) -> Dict[str, str]`
+* `query_data(table_name: str, limit: int) -> str`
+* `get_stats(table_name: str) -> str`
+* `search_in_table(table_name: str, col: str, val: str) -> str`
+
+## 5. Prompt Templates
+* **`analyze_csv_full`**: Workflow for full descriptive analysis.
+* **`audit_data_quality`**: Check for `NaN` values and outliers.
+* **`business_report`**: Strategic cross-table analysis.

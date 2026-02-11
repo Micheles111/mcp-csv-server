@@ -1,4 +1,11 @@
+# MCP Core SDK (includes CLI for Inspector)
 mcp[cli]
-pandas
-tabulate
+
+# ASGI Server for SSE Transport (Asynchronous I/O)
 uvicorn
+
+# Data Manipulation & Marshalling
+pandas
+
+# Output Formatting (Markdown Tables)
+tabulate
