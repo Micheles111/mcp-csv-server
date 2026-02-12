@@ -1,7 +1,11 @@
 **Project:** MCP CSV Explorer (Analytics Edition)
+
 **Exam:** Advanced Programming
+
 **Student:** Michele Sagone
+
 **ID:** 72051
+
 **Email:** m.sagone1@studenti.unipi.it
 
 ## 1. Introduction
@@ -207,5 +211,6 @@ The development of the **MCP CSV Explorer** confirms the shift in the modern dev
 The project successfully achieved its goal: transforming a static filesystem into a dynamic, queryable knowledge base for LLMs. The use of **SSE Transport** proved superior to STDIO for debugging and decoupled testing.
 
 However, the reliability of the output was not absolute. The project's success relied heavily on the **"Human-in-the-Loop"** methodology. As predicted by the "Turing Prophecy" discussed in the course, my primary responsibility was not to type syntax, but to specify requirements (Prompt Engineering) and verify behavior (Auditing).
+
 
 The ability to **Revert and Retry** proved to be a more powerful tool than traditional debugging, allowing for rapid prototyping while maintaining the integrity of the application's requirements.
