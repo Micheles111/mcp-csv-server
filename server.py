@@ -6,34 +6,34 @@ from typing import List, Dict, Any
 import pandas as pd
 from mcp.server.fastmcp import FastMCP
 
-# --- CONFIGURAZIONE LOGGING ---
+# --- LOGGING CONFIGURATION ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("CSV_Explorer")
 
-# --- INIZIALIZZAZIONE ---
+# --- INITIALIZATION ---
 mcp = FastMCP("CSV Explorer")
 
-# Path Configuration using Pathlib (More robust OOP approach)
+# Path Configuration using Pathlib (Robust OOP approach)
 BASE_DIR = Path(__file__).parent.resolve()
 DATA_DIR = BASE_DIR / "data"
 
 # Ensure data directory exists
 DATA_DIR.mkdir(exist_ok=True)
 
-# --- HELPER FUNZIONI ---
+# --- HELPER FUNCTIONS ---
 
 def _validate_path(table_name: str) -> Path:
     """
-    Risolve e valida il percorso del file CSV.
-    Usa pathlib per garantire che il percorso risolto sia dentro DATA_DIR.
-    Previene attacchi di Path Traversal.
+    Resolves and validates the CSV file path.
+    Uses pathlib to ensure the resolved path is strictly within DATA_DIR.
+    Prevents Path Traversal attacks.
     """
     clean_name = table_name if table_name.endswith('.csv') else f"{table_name}.csv"
     
-    # Risoluzione del percorso assoluto
+    # Resolve absolute path
     target_path = (DATA_DIR / clean_name).resolve()
     
-    # Security Check: Il percorso deve iniziare con DATA_DIR
+    # Security Check: The path must start with DATA_DIR
     if not str(target_path).startswith(str(DATA_DIR)):
         raise ValueError(f"Security Alert: Attempted Path Traversal on '{table_name}'")
     
@@ -44,17 +44,17 @@ def _validate_path(table_name: str) -> Path:
 
 async def _load_dataframe(path: Path) -> pd.DataFrame:
     """
-    Esegue il caricamento di Pandas in un thread separato.
-    Cruciale per non bloccare l'Event Loop asincrono (vedi lezione su Async/GIL).
+    Loads a Pandas DataFrame in a separate thread.
+    Crucial to avoid blocking the Async Event Loop (bypassing GIL limitations for I/O).
     """
     try:
-        # asyncio.to_thread esegue la funzione sincrona in un thread pool separato
+        # asyncio.to_thread runs the synchronous function in a separate thread pool
         return await asyncio.to_thread(pd.read_csv, path)
     except Exception as e:
         logger.error(f"Error reading CSV {path}: {e}")
         raise
 
-# --- TOOLS (Asincroni) ---
+# --- TOOLS (Async) ---
 
 @mcp.tool()
 async def list_tables() -> List[str]:
@@ -62,9 +62,8 @@ async def list_tables() -> List[str]:
     Lists all available datasets in the data directory.
     """
     try:
-        # L'I/O su disco è bloccante, ma os.listdir è veloce. 
-        # Per massima correttezza in un server ad alto carico, anche questo andrebbe in to_thread,
-        # ma per semplicità qui lo lasciamo diretto o usiamo glob.
+        # Disk I/O is blocking, but directory listing is generally fast.
+        # Uses pathlib glob for efficient filtering.
         files = [f.stem for f in DATA_DIR.glob("*.csv")]
         return files
     except Exception as e:
@@ -87,7 +86,7 @@ async def get_schema(table_name: str) -> Dict[str, str]:
 @mcp.tool()
 async def query_data(table_name: str, limit: int = 5) -> str:
     """
-    Retrieves a sample of raw data.
+    Retrieves a sample of raw data (Head Sampling).
     """
     try:
         path = _validate_path(table_name)
@@ -100,11 +99,12 @@ async def query_data(table_name: str, limit: int = 5) -> str:
 async def get_stats(table_name: str) -> str:
     """
     Performs deterministic server-side statistical analysis.
+    Offloads computation to a thread to keep the server responsive.
     """
     try:
         path = _validate_path(table_name)
         df = await _load_dataframe(path)
-        # describe() può essere computazionalmente oneroso, bene averlo off-thread
+        # describe() can be computationally expensive, so we run it off-thread
         description = await asyncio.to_thread(lambda: df.describe().to_markdown())
         return description
     except Exception as e:
@@ -114,6 +114,7 @@ async def get_stats(table_name: str) -> str:
 async def search_in_table(table_name: str, column: str, value: str) -> str:
     """
     Performs a case-insensitive search within a specific column.
+    Uses Vectorized operations for performance.
     """
     try:
         path = _validate_path(table_name)
@@ -122,7 +123,7 @@ async def search_in_table(table_name: str, column: str, value: str) -> str:
         if column not in df.columns:
             return f"Error: Column '{column}' not found in schema."
         
-        # Operazione vettoriale eseguita nel thread pool
+        # Vectorized operation executed in the thread pool
         def perform_search():
             filtered = df[df[column].astype(str).str.contains(value, case=False, na=False)]
             return filtered.to_markdown(index=False) if not filtered.empty else "No results found."
@@ -171,7 +172,7 @@ def register_resources():
         uri = f"csv://{filename}"
         
         # Closure to capture the specific path reliably
-        # Questo dimostra la comprensione dello scope lessicale (Doc 05)
+        # Demonstrates lexical scope understanding (avoiding late binding)
         def make_reader(p: Path):
             return lambda: p.read_text(encoding="utf-8")
 
