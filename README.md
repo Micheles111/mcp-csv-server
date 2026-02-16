@@ -1,17 +1,21 @@
 # 📂 MCP CSV Explorer (Analytics Edition)
 
 An advanced **Model Context Protocol (MCP)** server that transforms a directory of local CSV files into a structured, queryable knowledge base for LLMs.
+Designed as a final project for the **Advanced Programming** course.
 
 ## 🚀 Key Features
-- **Smart Analytics:** Utilizes `pandas` for deterministic statistical analysis (`get_stats`), reducing LLM hallucinations.
-- **SSE Transport:** Implements **Server-Sent Events** over HTTP (Asynchronous I/O) for robust client-server decoupling.
-- **Dynamic Introspection:** Automatically discovers new CSV files via Runtime Reflection.
-- **Type Safety:** Built with strict Python type hinting for reliability.
-- **Smart Prompts:** Includes predefined templates for data auditing, business reports, and code generation.
+
+* **Smart Analytics:** Utilizes `pandas` for **deterministic** statistical analysis (`get_stats`), reducing LLM hallucinations on math tasks.
+* **Non-blocking Execution:** Handles CPU-bound CSV parsing in a separate thread pool (`asyncio.to_thread`) to prevent blocking the Event Loop, ensuring responsiveness.
+* **Secure File Access:** Implements strict **Path Traversal Protection** using Object-Oriented Paths (`pathlib`) to confine access to the data directory.
+* **SSE Transport:** Implements **Server-Sent Events** over HTTP (Asynchronous I/O) for robust client-server decoupling.
+* **Dynamic Introspection:** Automatically discovers new CSV files via Runtime Reflection.
+* **Type Safety:** Built with strict Python type hinting for reliability.
 
 ## 🛠️ Installation & Setup
 
 ### 1. Clone the repository
+
 ```bash
 git clone [REPOSITORY_URL]
 cd mcp-csv-server
@@ -49,14 +53,18 @@ Since the server uses the **SSE protocol**, startup requires two terminals:
 
 ### Terminal 1 (The Server)
 
+Starts the Async Event Loop (`uvicorn` backend).
+
 ```bash
 python server.py
 
 ```
 
-*The server will start at `http://127.0.0.1:8000*`
+*The server will listen at `http://127.0.0.1:8000/sse*`
 
 ### Terminal 2 (The Client/Inspector)
+
+Uses the official MCP Inspector to test the endpoints.
 
 ```bash
 npx @modelcontextprotocol/inspector
@@ -79,7 +87,7 @@ npx @modelcontextprotocol/inspector
 ### Analytics
 
 * **`get_stats`**: Statistical report (mean, min, max, std deviation) computed deterministically via Pandas.
-* **`search_in_table`**: Filtered case-insensitive search using vectorized operations.
+* **`search_in_table`**: Filtered case-insensitive search using **vectorized operations** () for performance.
 
 ## 📝 Available Prompts (Templates)
 
@@ -89,4 +97,4 @@ npx @modelcontextprotocol/inspector
 
 ## 👤 Author
 
-**Michele Sagone** - Project developed with an **AI-Assisted approach (Human-in-the-loop)**.
+**Michele Sagone** - Project developed with a **Human-in-the-Loop AI methodology**.

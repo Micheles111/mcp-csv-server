@@ -1,124 +1,138 @@
-from mcp.server.fastmcp import FastMCP
-import pandas as pd
-import os
-from typing import List, Dict, Any, Optional
+import asyncio
+import logging
+from pathlib import Path
+from typing import List, Dict, Any
 
-# MCP Server Initialization
-# We use FastMCP to abstract the low-level JSON-RPC protocol details.
+import pandas as pd
+from mcp.server.fastmcp import FastMCP
+
+# --- CONFIGURAZIONE LOGGING ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("CSV_Explorer")
+
+# --- INIZIALIZZAZIONE ---
 mcp = FastMCP("CSV Explorer")
 
-# Path Configuration
-# Using absolute paths ensures compatibility across different environments (WSL/Windows).
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+# Path Configuration using Pathlib (More robust OOP approach)
+BASE_DIR = Path(__file__).parent.resolve()
+DATA_DIR = BASE_DIR / "data"
 
-def get_csv_path(table_name: str) -> str:
+# Ensure data directory exists
+DATA_DIR.mkdir(exist_ok=True)
+
+# --- HELPER FUNZIONI ---
+
+def _validate_path(table_name: str) -> Path:
     """
-    Helper function to resolve file paths safely.
-    Implements strict Path Traversal protection.
+    Risolve e valida il percorso del file CSV.
+    Usa pathlib per garantire che il percorso risolto sia dentro DATA_DIR.
+    Previene attacchi di Path Traversal.
     """
-    if not table_name.endswith('.csv'):
-        filename = f"{table_name}.csv"
-    else:
-        filename = table_name
+    clean_name = table_name if table_name.endswith('.csv') else f"{table_name}.csv"
     
-    # 1. Resolve the absolute path
-    final_path = os.path.abspath(os.path.join(DATA_DIR, filename))
+    # Risoluzione del percorso assoluto
+    target_path = (DATA_DIR / clean_name).resolve()
     
-    # 2. SECURITY CHECK (Crucial for Report Compliance)
-    # Ensure the resolved path is strictly within the DATA_DIR
-    if not final_path.startswith(DATA_DIR):
+    # Security Check: Il percorso deve iniziare con DATA_DIR
+    if not str(target_path).startswith(str(DATA_DIR)):
         raise ValueError(f"Security Alert: Attempted Path Traversal on '{table_name}'")
+    
+    if not target_path.exists():
+        raise FileNotFoundError(f"Table '{table_name}' not found.")
         
-    return final_path
+    return target_path
 
-# --- BASE TOOLS (Data Marshalling & Introspection) ---
-
-@mcp.tool()
-def list_tables() -> List[str]:
+async def _load_dataframe(path: Path) -> pd.DataFrame:
     """
-    Lists all available datasets in the data directory.
-    Acts as a catalog discovery tool for the LLM.
+    Esegue il caricamento di Pandas in un thread separato.
+    Cruciale per non bloccare l'Event Loop asincrono (vedi lezione su Async/GIL).
     """
     try:
-        if not os.path.exists(DATA_DIR): return []
-        # List comprehension for efficient filtering
-        return [f.replace('.csv', '') for f in os.listdir(DATA_DIR) if f.endswith('.csv')]
+        # asyncio.to_thread esegue la funzione sincrona in un thread pool separato
+        return await asyncio.to_thread(pd.read_csv, path)
+    except Exception as e:
+        logger.error(f"Error reading CSV {path}: {e}")
+        raise
+
+# --- TOOLS (Asincroni) ---
+
+@mcp.tool()
+async def list_tables() -> List[str]:
+    """
+    Lists all available datasets in the data directory.
+    """
+    try:
+        # L'I/O su disco è bloccante, ma os.listdir è veloce. 
+        # Per massima correttezza in un server ad alto carico, anche questo andrebbe in to_thread,
+        # ma per semplicità qui lo lasciamo diretto o usiamo glob.
+        files = [f.stem for f in DATA_DIR.glob("*.csv")]
+        return files
     except Exception as e:
         return [f"System Error: {str(e)}"]
 
 @mcp.tool()
-def get_schema(table_name: str) -> Dict[str, str]:
+async def get_schema(table_name: str) -> Dict[str, str]:
     """
     Returns the schema (column names and types) of a dataset.
-    This allows the LLM to understand the data structure before querying.
     """
     try:
-        path = get_csv_path(table_name)
-        if not os.path.exists(path): return {"error": "File not found"}
-        
-        # We perform Marshalling from CSV format to a Python Dictionary
-        df = pd.read_csv(path)
+        path = _validate_path(table_name)
+        df = await _load_dataframe(path)
         return df.dtypes.apply(lambda x: x.name).to_dict()
+    except FileNotFoundError:
+        return {"error": "File not found"}
     except Exception as e:
         return {"error": f"Marshalling Error: {str(e)}"}
 
 @mcp.tool()
-def query_data(table_name: str, limit: int = 5) -> str:
+async def query_data(table_name: str, limit: int = 5) -> str:
     """
     Retrieves a sample of raw data.
-    Returns a Markdown-formatted string for optimal LLM readability.
     """
     try:
-        path = get_csv_path(table_name)
-        if not os.path.exists(path): return "Error: File not found"
-        
-        df = pd.read_csv(path)
-        # Using Markdown as the interchange format
+        path = _validate_path(table_name)
+        df = await _load_dataframe(path)
         return df.head(limit).to_markdown(index=False)
     except Exception as e:
         return f"Query Error: {str(e)}"
 
-# --- ANALYTICS TOOLS (Server-Side Computation) ---
-
 @mcp.tool()
-def get_stats(table_name: str) -> str:
+async def get_stats(table_name: str) -> str:
     """
     Performs deterministic server-side statistical analysis.
-    This offloads computational complexity from the LLM to the deterministic runtime (Pandas).
     """
     try:
-        path = get_csv_path(table_name)
-        if not os.path.exists(path): return "Error: File not found"
-        
-        df = pd.read_csv(path)
-        return df.describe().to_markdown()
+        path = _validate_path(table_name)
+        df = await _load_dataframe(path)
+        # describe() può essere computazionalmente oneroso, bene averlo off-thread
+        description = await asyncio.to_thread(lambda: df.describe().to_markdown())
+        return description
     except Exception as e:
         return f"Analytics Error: {str(e)}"
 
 @mcp.tool()
-def search_in_table(table_name: str, column: str, value: str) -> str:
+async def search_in_table(table_name: str, column: str, value: str) -> str:
     """
     Performs a case-insensitive search within a specific column.
-    Uses Vectorized operations for performance.
     """
     try:
-        path = get_csv_path(table_name)
-        if not os.path.exists(path): return "Error: Table not found."
+        path = _validate_path(table_name)
+        df = await _load_dataframe(path)
         
-        df = pd.read_csv(path)
         if column not in df.columns:
             return f"Error: Column '{column}' not found in schema."
         
-        # Vectorized string operation (O(n))
-        filtered = df[df[column].astype(str).str.contains(value, case=False, na=False)]
-        
-        if filtered.empty: return "No results found."
-        return filtered.to_markdown(index=False)
+        # Operazione vettoriale eseguita nel thread pool
+        def perform_search():
+            filtered = df[df[column].astype(str).str.contains(value, case=False, na=False)]
+            return filtered.to_markdown(index=False) if not filtered.empty else "No results found."
+
+        return await asyncio.to_thread(perform_search)
+
     except Exception as e:
         return f"Search Error: {str(e)}"
 
-# --- PROMPTS (Meta-Programming / Templates) ---
+# --- PROMPTS ---
 
 @mcp.prompt()
 def analyze_csv_full(table_name: str) -> str:
@@ -144,50 +158,34 @@ def audit_data_quality(table_name: str) -> str:
     Provide a bullet-point list of warnings or certify the dataset as 'Clean'.
     """
 
-@mcp.prompt()
-def business_report() -> str:
-    """Complex multi-file analysis template."""
-    return """
-    Generate a Business Intelligence Report by cross-referencing 'products' and 'orders'.
-    1. Analyze sales volume (Quantity) from the 'orders' table.
-    2. Correlate with product categories from the 'products' table.
-    3. Use 'search_in_table' to investigate any 'Cancelled' orders.
-    
-    Produce a strategic summary for stakeholders.
-    """
-
-# --- DYNAMIC RESOURCES (Reflection & Discovery) ---
+# --- DYNAMIC RESOURCES (Reflection) ---
 
 def register_resources():
     """
     Dynamically scans the filesystem and registers resources at runtime.
-    This mimics a reflection-based discovery mechanism.
     """
-    if not os.path.exists(DATA_DIR): return
+    if not DATA_DIR.exists(): return
 
-    for filename in os.listdir(DATA_DIR):
-        if filename.endswith('.csv'):
-            # URI Resource Identification
-            uri = f"csv://{filename}"
-            full_path = os.path.join(DATA_DIR, filename)
-            
-            # Closure to capture the specific path
-            def make_reader(p: str):
-                return lambda: open(p, "r", encoding="utf-8").read()
+    for file_path in DATA_DIR.glob("*.csv"):
+        filename = file_path.name
+        uri = f"csv://{filename}"
+        
+        # Closure to capture the specific path reliably
+        # Questo dimostra la comprensione dello scope lessicale (Doc 05)
+        def make_reader(p: Path):
+            return lambda: p.read_text(encoding="utf-8")
 
-            reader = make_reader(full_path)
-            
-            # Sanitizing name for internal registry
-            clean_name = filename.replace(".", "_").replace("-", "_")
-            reader.__name__ = f"read_{clean_name}"
-            
-            # Registering the resource via decorator
-            mcp.resource(uri)(reader)
+        reader = make_reader(file_path)
+        
+        # Sanitizing name for internal registry
+        clean_name = filename.replace(".", "_").replace("-", "_")
+        reader.__name__ = f"read_{clean_name}"
+        
+        mcp.resource(uri)(reader)
 
 # Initialize dynamic resources
 register_resources()
 
 if __name__ == "__main__":
-    # Starting the server using SSE transport (Asynchronous)
-    print("Starting MCP Server with SSE Transport on port 8000...")
+    logger.info("Starting Async MCP Server with SSE Transport on port 8000...")
     mcp.run(transport='sse')

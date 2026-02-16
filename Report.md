@@ -1,11 +1,8 @@
-**Project:** MCP CSV Explorer (Analytics Edition)
+# Project: MCP CSV Explorer (Analytics Edition)
 
 **Exam:** Advanced Programming
-
 **Student:** Michele Sagone
-
 **ID:** 720510
-
 **Email:** m.sagone1@studenti.unipi.it
 
 ## 1. Introduction
@@ -27,9 +24,7 @@ The first critical architectural decision was choosing the transport layer for t
 * **Initial Hypothesis:** I initially considered `stdio` for its simplicity, as it pipes data directly between processes.
 * **The Problem:** During the research phase, I learned that `stdio` makes debugging difficult because the communication channel is occupied by the protocol itself, preventing the use of standard print-debugging or external inspection tools.
 * **The Decision:** I chose **SSE (Server-Sent Events)** over HTTP. This decision aligns with the course topics on **Asynchronous Programming** and **Non-Blocking I/O**.
-* *Reasoning:* SSE allows the server to run as a standalone web service (using `uvicorn` as the ASGI server), decoupling it from the client. This enables the use of the **MCP Inspector** web tool for validation, which was critical for the "Critical Verifier" workflow.
-
-
+* **Reasoning:** SSE allows the server to run as a standalone web service (using `uvicorn` as the ASGI server), decoupling it from the client. This enables the use of the **MCP Inspector** web tool for validation, which was critical for the "Critical Verifier" workflow.
 
 ### 2.2 Data Marshalling Strategy: Raw I/O vs. Pandas
 
@@ -37,10 +32,8 @@ I needed to determine how to read and process the CSV files. I asked the AI to e
 
 * **Option A: Built-in `csv` module.** The AI suggested this for lightweight dependencies. However, I rejected it because it treats data as strings, lacking type awareness.
 * **Option B: `pandas` DataFrames.** I selected this option despite the heavier dependency.
-* *Theoretical Justification:* As studied in the course (Runtime Environments), Python objects carry significant overhead. However, Pandas uses C-optimized structures (NumPy arrays) for memory management.
-* *Validation Benefit:* Using Pandas allows for **Deterministic Analytics** (e.g., `df.describe()`). Instead of asking the LLM to calculate the average of 1000 rows (which leads to hallucinations), the server performs the math deterministically and sends only the result. This drastically reduces the "Token Context Window" usage and eliminates calculation errors.
-
-
+* **Theoretical Justification:** As studied in the course (Runtime Environments), Python objects carry significant overhead. However, Pandas uses C-optimized structures (NumPy arrays) for memory management.
+* **Validation Benefit:** Using Pandas allows for **Deterministic Analytics** (e.g., `df.describe()`). Instead of asking the LLM to calculate the average of 1000 rows (which leads to hallucinations), the server performs the math deterministically and sends only the result. This drastically reduces the "Token Context Window" usage and eliminates calculation errors.
 
 ### 2.3 Security & Isolation
 
@@ -67,13 +60,13 @@ Instead of a single "One-Shot" generation for the whole server, I used a **Chain
 1. **Skeleton:** Establishing the server connection and basic file listing.
 2. **Schema Introspection:** Implementing `get_schema` (Reflection).
 3. **Analytics Layer:** Adding `get_stats` and `search_in_table`.
-4. **Hardening:** Adding Type Hints and Error Handling (Refinement).
+4. **Hardening:** Adding Type Hints, Pathlib Security, and Async Optimizations.
 
 This granular approach allowed me to validate each component independently before moving to the next, reducing the complexity of the debugging phase.
 
 ## 4. Installation and Usage (Reproducibility)
 
-To ensure consistent execution across different environments (specifically guaranteeing compatibility with the examiner's machine), I avoided complex containerization in favor of a standard, lightweight Python Virtual Environment (`venv`). This decision enforces **Dependency Isolation**, preventing conflicts with system-wide packages.
+To ensure consistent execution across different environments, I avoided complex containerization in favor of a standard, lightweight Python Virtual Environment (`venv`). This decision enforces **Dependency Isolation**, preventing conflicts with system-wide packages.
 
 ### 4.1 Prerequisites
 
@@ -145,8 +138,8 @@ The core of this project was not writing code, but **validating** AI-generated l
 1. **Prompting:** Issuing a specific, technical request (e.g., "Implement a tool to calculate stats using Pandas").
 2. **Immediate Verification:** Running the code in WSL.
 3. **Decision Gate:**
-* **Accept:** If the tool worked and handled edge cases (e.g., missing files).
-* **Revert & Retry:** If the AI introduced "Code Smells" (e.g., hardcoded paths), I reverted the changes and refined the prompt rather than patching the code manually.
+* **Accept:** If the tool worked and handled edge cases.
+* **Revert & Retry:** If the AI introduced "Code Smells" (e.g., hardcoded paths or blocking calls), I reverted the changes and refined the prompt.
 
 
 
@@ -158,8 +151,8 @@ The "Revert and Retry" strategy was triggered by specific failure modes:
 * *Intervention:* I rejected this approach because it was fragile. I forced a **Revert** and explicitly prompted for a **Pandas-based approach**, which provides a robust, in-memory dataframe engine for reliable analytics.
 
 
-* **Path Traversal Vulnerabilities:** Early versions of the `get_csv_path` function blindly concatenated user input.
-* *Intervention:* I recognized the security risk (Path Traversal). I refined the prompt to mandate the use of `os.path.join` and `os.path.abspath` to ensure strict confinement within the `data/` directory.
+* **Path Traversal Vulnerabilities:** Early versions of the `get_csv_path` function blindly concatenated user input strings.
+* *Intervention:* I recognized the security risk (Path Traversal). Instead of patching it with fragile string checks, I prompted the AI to refactor the code using **`pathlib`**. This allowed for an Object-Oriented approach where `path.resolve()` strictly confines file access within the `data/` directory.
 
 
 * **Type Hinting Inconsistencies:** The AI often omitted return types.
@@ -172,37 +165,30 @@ The "Revert and Retry" strategy was triggered by specific failure modes:
 A critical validation step was ensuring the server ran on both Linux (WSL) and native Windows.
 
 * **Issue:** Different OSs handle file paths differently (`/` vs `\`).
-* **Resolution:** I verified that using `os.path.join` resolved these discrepancies automatically. The final code was tested on **Windows 11 (via PowerShell)** and **Ubuntu 22.04 (via WSL)**, confirming that the "Marshalling" of file paths works consistently in both environments.
+* **Resolution:** The adoption of `pathlib` (see section 6.2) automatically resolved these discrepancies, as it abstracts filesystem differences. The final code was tested on **Windows 11 (via PowerShell)** and **Ubuntu 22.04 (via WSL)**, confirming that the "Marshalling" of file paths works consistently in both environments.
 
 ## 7. Validation Results & Case Studies
 
 ### 7.1 Success Rate and Efficiency
 
-The AI demonstrated high proficiency in generating "Boilerplate Code" (e.g., setting up the FastMCP class and basic decorators). In these instances, the **"Generate-Verify-Accept"** cycle was extremely fast. However, for logic involving data manipulation, the success rate dropped, requiring active intervention.
+The AI demonstrated high proficiency in generating "Boilerplate Code" (e.g., setting up the FastMCP class and basic decorators). In these instances, the **"Generate-Verify-Accept"** cycle was extremely fast. However, for logic involving complex system interactions (Async I/O), the success rate dropped, requiring active intervention.
 
-### 7.2 Case Study: Optimizing `search_in_table` (Vectorization vs. Iteration)
+### 7.2 Case Study: Concurrency and the GIL
 
-A specific validation challenge arose during the implementation of the search tool.
+A specific validation challenge arose during the implementation of the search tool and analytics.
 
-* **Initial AI Approach:** The AI initially proposed a Python loop to iterate through every row of the CSV and check for a string match using `if value in row`.
-* *Critique:* As a "Critical Verifier," I identified this as a performance bottleneck ( in Python interpreter time), which contradicts the efficiency principles of **Data Science libraries**.
-
-
-* **Refinement:** I rejected the code and prompted for a **Vectorized Approach**.
-* *Outcome:* The final implementation uses Pandas' native vectorization: `df[column].str.contains(value)`.
-* *Benefit:* This pushes the computation down to the C level (NumPy), offering orders of magnitude better performance and ensuring consistent behavior with `NaN` values (handled via `na=False`).
-
-
+* **Initial AI Approach:** The AI proposed standard `async def` functions that called `pd.read_csv()` directly.
+* **Critique:** As a "Critical Verifier," I identified a major architectural flaw. Pandas operations are CPU-bound and **Synchronous**. Calling them directly inside an `async` function blocks the Python **Event Loop**, causing the SSE heartbeat to freeze and making the server unresponsive to other requests.
+* **Refinement:** I mandated an architectural change: wrapping all DataFrame operations in **`asyncio.to_thread`**.
+* **Outcome:** This offloads the heavy computation to a separate thread pool, keeping the main Event Loop free. This demonstrates a deep understanding of Python's **GIL (Global Interpreter Lock)** and asynchronous programming patterns.
 
 ### 7.3 Security Analysis: Path Traversal
 
 While the application is designed for local usage, I performed a security audit on the file access logic, treating it as if it were a production web service.
 
 * **Vulnerability:** A potential **Path Traversal** attack was identified. If a user requested `../../etc/passwd` as a `table_name`, the naive implementation might have accessed sensitive system files.
-* **Resolution:** I enforced the use of `os.path.abspath` and checked that the resolved path starts with the `DATA_DIR`.
-* *Limitation:* Unlike the reference project which implemented HTTPS/Self-Signed Certificates, this server operates over plain HTTP (localhost). I acknowledge that in a production environment, this would require a Reverse Proxy (Nginx) or a VPN tunnel to secure the SSE stream.
-
-
+* **Resolution:** I enforced the use of `pathlib`'s `resolve()` method. The code now explicitly checks: `if not target_path.startswith(DATA_DIR): raise SecurityError`.
+* **Limitation:** Unlike the reference project which implemented HTTPS, this server operates over plain HTTP (localhost). I acknowledge that in a production environment, this would require a Reverse Proxy (Nginx) or a VPN tunnel.
 
 ## 8. Conclusion
 
@@ -211,6 +197,5 @@ The development of the **MCP CSV Explorer** confirms the shift in the modern dev
 The project successfully achieved its goal: transforming a static filesystem into a dynamic, queryable knowledge base for LLMs. The use of **SSE Transport** proved superior to STDIO for debugging and decoupled testing.
 
 However, the reliability of the output was not absolute. The project's success relied heavily on the **"Human-in-the-Loop"** methodology. As predicted by the "Turing Prophecy" discussed in the course, my primary responsibility was not to type syntax, but to specify requirements (Prompt Engineering) and verify behavior (Auditing).
-
 
 The ability to **Revert and Retry** proved to be a more powerful tool than traditional debugging, allowing for rapid prototyping while maintaining the integrity of the application's requirements.

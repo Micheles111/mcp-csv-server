@@ -39,20 +39,29 @@ PROMPT 4 (Adding Deterministic Features):
 Reasoning: LLMs are bad at arithmetic. I want the server to calculate Mean, Min, and Max deterministically using Pandas and return only the summary to the LLM. This saves tokens and prevents hallucinations."
 
 --------------------------------------------------------------------------------
-SESSION 5: CODE HARDENING & TYPE SAFETY
-Objective: Meeting "Advanced Programming" exam standards.
+SESSION 5: ARCHITECTURAL REFACTORING (Concurrency & Safety)
+Objective: Solving GIL blocking issues and Path Traversal.
 
-PROMPT 5 (Final Refactoring):
-"The code works, but it lacks professional polish.
-1. Add strict Python Type Hints (e.g., -> List[str], -> Dict[str, Any]) to ALL functions.
-2. Wrap every file I/O operation in try/except blocks to handle missing files without crashing.
-3. Ensure that file paths are resolved using 'os.path.abspath' to prevent Path Traversal security issues."
+PROMPT 5 (The "Advanced Programming" Fix):
+"I noticed a performance issue: Pandas operations are blocking the Async Event Loop, causing the SSE heartbeat to freeze during heavy loads.
+1. Refactor the code to wrap all DataFrame operations in 'asyncio.to_thread' to offload them to a thread pool.
+2. SECURITY UPDATE: Replace string-based path handling with 'pathlib'. Use '.resolve()' to strictly validate that files are inside the data directory to prevent Path Traversal attacks."
 
 --------------------------------------------------------------------------------
-SESSION 6: METAPROGRAMMING
+SESSION 6: CODE HARDENING & TYPE SAFETY
+Objective: Meeting professional standards.
+
+PROMPT 6 (Final Polish):
+"The code logic is solid, but the style is inconsistent.
+1. Add strict Python Type Hints (e.g., -> List[str], -> Dict[str, Any]) to ALL functions.
+2. Add logging instead of print statements.
+3. Verify that all tools return clear error messages instead of raising unhandled exceptions."
+
+--------------------------------------------------------------------------------
+SESSION 7: METAPROGRAMMING
 Objective: Adding Prompt Templates.
 
-PROMPT 6:
+PROMPT 7:
 "Add 3 MCP Prompts (@mcp.prompt) to the server:
 1. 'analyze_csv_full': A workflow for a data scientist.
 2. 'audit_data_quality': To check for missing values.
