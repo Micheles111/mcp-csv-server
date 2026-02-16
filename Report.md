@@ -1,8 +1,11 @@
 # 📂Project: MCP CSV Explorer (Analytics Edition)
 
 **Exam:** Advanced Programming
+
 **Student:** Michele Sagone
+
 **ID:** 720510
+
 **Email:** m.sagone1@studenti.unipi.it
 
 ## 1. Introduction
