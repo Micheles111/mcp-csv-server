@@ -60,7 +60,7 @@ python server.py
 
 ```
 
-The server will listen at `http://127.0.0.1:8000/sse`
+*The server will listen at `http://127.0.0.1:8000/sse*`
 
 ### Terminal 2 (The Client/Inspector)
 

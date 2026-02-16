@@ -34,7 +34,8 @@ def _validate_path(table_name: str) -> Path:
     target_path = (DATA_DIR / clean_name).resolve()
     
     # Security Check: The path must start with DATA_DIR
-    if not str(target_path).startswith(str(DATA_DIR)):
+    # We resolve DATA_DIR too to be sure of the comparison
+    if not str(target_path).startswith(str(DATA_DIR.resolve())):
         raise ValueError(f"Security Alert: Attempted Path Traversal on '{table_name}'")
     
     if not target_path.exists():

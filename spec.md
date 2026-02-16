@@ -12,6 +12,7 @@ To develop an "Analytics-Ready" **Model Context Protocol (MCP)** server that exp
 * *Rationale:* Decouples server execution from client interaction, enabling remote debugging via the **MCP Inspector**.
 
 
+
 * **Data Engine:** `pandas` (NumPy backend).
 * *Rationale:* Provides **Vectorized** operations for high-performance filtering and **Deterministic** statistical computation.
 
@@ -39,7 +40,7 @@ To develop an "Analytics-Ready" **Model Context Protocol (MCP)** server that exp
 ### 3.3 Analytics & Logic
 
 * **Deterministic Stats:** Implement `get_stats` to offload mathematical computations (Mean, Min, Max, StdDev) to the CPU, preventing LLM arithmetic errors.
-* **Vectorized Search:** Implement `search_in_table` using Pandas vectorization ( or better) instead of Python iterative loops.
+* **Vectorized Search:** Implement `search_in_table` using Pandas vectorization ($O(n)$ or better) instead of Python iterative loops.
 
 ### 3.4 Security
 
