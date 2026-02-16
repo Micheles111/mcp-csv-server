@@ -13,12 +13,24 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 def get_csv_path(table_name: str) -> str:
-    """Helper function to resolve file paths safely."""
+    """
+    Helper function to resolve file paths safely.
+    Implements strict Path Traversal protection.
+    """
     if not table_name.endswith('.csv'):
         filename = f"{table_name}.csv"
     else:
         filename = table_name
-    return os.path.join(DATA_DIR, filename)
+    
+    # 1. Resolve the absolute path
+    final_path = os.path.abspath(os.path.join(DATA_DIR, filename))
+    
+    # 2. SECURITY CHECK (Crucial for Report Compliance)
+    # Ensure the resolved path is strictly within the DATA_DIR
+    if not final_path.startswith(DATA_DIR):
+        raise ValueError(f"Security Alert: Attempted Path Traversal on '{table_name}'")
+        
+    return final_path
 
 # --- BASE TOOLS (Data Marshalling & Introspection) ---
 
@@ -41,9 +53,10 @@ def get_schema(table_name: str) -> Dict[str, str]:
     Returns the schema (column names and types) of a dataset.
     This allows the LLM to understand the data structure before querying.
     """
-    path = get_csv_path(table_name)
-    if not os.path.exists(path): return {"error": "File not found"}
     try:
+        path = get_csv_path(table_name)
+        if not os.path.exists(path): return {"error": "File not found"}
+        
         # We perform Marshalling from CSV format to a Python Dictionary
         df = pd.read_csv(path)
         return df.dtypes.apply(lambda x: x.name).to_dict()
@@ -56,9 +69,10 @@ def query_data(table_name: str, limit: int = 5) -> str:
     Retrieves a sample of raw data.
     Returns a Markdown-formatted string for optimal LLM readability.
     """
-    path = get_csv_path(table_name)
-    if not os.path.exists(path): return "Error: File not found"
     try:
+        path = get_csv_path(table_name)
+        if not os.path.exists(path): return "Error: File not found"
+        
         df = pd.read_csv(path)
         # Using Markdown as the interchange format
         return df.head(limit).to_markdown(index=False)
@@ -70,12 +84,13 @@ def query_data(table_name: str, limit: int = 5) -> str:
 @mcp.tool()
 def get_stats(table_name: str) -> str:
     """
-    Performs server-side statistical analysis.
+    Performs deterministic server-side statistical analysis.
     This offloads computational complexity from the LLM to the deterministic runtime (Pandas).
     """
-    path = get_csv_path(table_name)
-    if not os.path.exists(path): return "Error: File not found"
     try:
+        path = get_csv_path(table_name)
+        if not os.path.exists(path): return "Error: File not found"
+        
         df = pd.read_csv(path)
         return df.describe().to_markdown()
     except Exception as e:
@@ -85,15 +100,17 @@ def get_stats(table_name: str) -> str:
 def search_in_table(table_name: str, column: str, value: str) -> str:
     """
     Performs a case-insensitive search within a specific column.
+    Uses Vectorized operations for performance.
     """
-    path = get_csv_path(table_name)
-    if not os.path.exists(path): return "Error: Table not found."
     try:
+        path = get_csv_path(table_name)
+        if not os.path.exists(path): return "Error: Table not found."
+        
         df = pd.read_csv(path)
         if column not in df.columns:
             return f"Error: Column '{column}' not found in schema."
         
-        # Vectorized string operation for performance
+        # Vectorized string operation (O(n))
         filtered = df[df[column].astype(str).str.contains(value, case=False, na=False)]
         
         if filtered.empty: return "No results found."
