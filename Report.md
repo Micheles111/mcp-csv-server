@@ -1,4 +1,4 @@
-# Project: MCP CSV Explorer (Analytics Edition)
+# 📂Project: MCP CSV Explorer (Analytics Edition)
 
 **Exam:** Advanced Programming
 **Student:** Michele Sagone
